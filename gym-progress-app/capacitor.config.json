@@ -1,7 +1,7 @@
 {
   "appId": "com.forge.gymprogress",
   "appName": "Forge",
-  "webDir": ".",
+  "webDir": "www",
   "server": {
     "androidScheme": "https"
   },
