@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الطيبات — المنصة الرقمية لنظام د. ضياء العوضي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                        display: ['DM Serif Display', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        emerald: {
+                            950: '#022c22',
+                            900: '#064e3b',
+                            800: '#065f46',
+                            500: '#10b981',
+                            400: '#34d399',
+                        },
+                        amber: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root { --ink: #102c25; --paper: #f2ead9; --orange: #ef6c35; --lime: #cbdc57; }
+        body { background: var(--ink); color: #f7f1e5; background-image: radial-gradient(rgba(242,234,217,.09) 1px, transparent 1px); background-size: 18px 18px; }
+        .display-font { font-family: 'DM Serif Display', Georgia, serif; }
+        .paper-panel { background: var(--paper); color: var(--ink); box-shadow: 12px 12px 0 rgba(203,220,87,.9); }
+        .paper-panel input { color: var(--ink); }
+        .paper-panel input::placeholder { color: rgba(16,44,37,.52); }
+        .scan-frame { position: relative; }
+        .scan-frame::before, .scan-frame::after { content: ''; position: absolute; width: 22px; height: 22px; border-color: var(--orange); pointer-events: none; }
+        .scan-frame::before { top: -8px; right: -8px; border-top: 3px solid; border-right: 3px solid; }
+        .scan-frame::after { bottom: -8px; left: -8px; border-bottom: 3px solid; border-left: 3px solid; }
+        .signal-line { height: 1px; background: repeating-linear-gradient(90deg, var(--orange) 0 5px, transparent 5px 10px); }
+        .specimen-card { position: relative; overflow: hidden; }
+        .specimen-card::after { content: '✳'; position: absolute; left: 18px; bottom: -18px; font-size: 92px; color: rgba(203,220,87,.13); transform: rotate(-15deg); pointer-events: none; }
+        .specimen-number { font-family: 'DM Serif Display', Georgia, serif; color: var(--orange); line-height: 1; }
+        .filter-button[aria-pressed="true"] { background: var(--lime); color: var(--ink); border-color: var(--lime); }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #d97706 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .emerald-card-glow { box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.12); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #022c22; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #065f46; border-radius: 3px; }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300 overflow-x-hidden min-h-screen flex flex-col justify-between">
+
+    <!-- Ambient Glow -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-70">
+        <div class="absolute -top-[10%] right-1/2 translate-x-1/2 w-[1000px] h-[500px] bg-emerald-600/10 blur-[160px] rounded-full"></div>
+        <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-500/10 blur-[180px] rounded-full"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="relative z-50 border-b border-lime-200/20 bg-[#102c25]/90 backdrop-blur-xl sticky top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-[#cbdc57] flex items-center justify-center rotate-3 shadow-[4px_4px_0_#ef6c35]">
+                    <i data-lucide="leaf" class="w-6 h-6 text-slate-950 stroke-[2.5]"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-2xl font-black tracking-tight text-[#f2ead9]">الطيّبات<span class="text-[#ef6c35]">.</span></span>
+                    <span class="text-[10px] font-mono tracking-widest text-[#cbdc57] uppercase">Food field guide / 2026</span>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-emerald-200/70">
+                <a href="#rules-section" class="hover:text-amber-400 transition-colors">القواعد الـ6</a>
+                <a href="#search-section" class="hover:text-amber-400 transition-colors">فاحص الأطعمة</a>
+                <a href="#protocol-section" class="hover:text-amber-400 transition-colors">بروتوكول الـ 4 أسابيع</a>
+                <a href="#db-section" class="hover:text-amber-400 transition-colors">سجل الطيبات والخبائث</a>
+            </div>
+
+            <a href="#search-section" class="px-5 py-2.5 rounded-xl bg-[#ef6c35] hover:bg-[#f48350] text-[#102c25] font-bold text-xs shadow-[4px_4px_0_#cbdc57] transition-all active:translate-y-1 active:shadow-none flex items-center gap-2">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                <span>فحص طعام</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative z-10 pt-16 pb-20 md:pt-24 md:pb-28 border-b border-[#cbdc57]/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex items-center gap-4 max-w-5xl mx-auto mb-10">
+                <span class="font-mono text-[10px] text-[#cbdc57] tracking-widest">FIELD NOTE 001</span>
+                <div class="signal-line flex-1"></div>
+                <span class="font-mono text-[10px] text-[#ef6c35] tracking-widest">LIVE DATABASE</span>
+            </div>
+
+            <div class="grid lg:grid-cols-[1fr_auto] gap-12 items-center text-right max-w-5xl mx-auto">
+              <div>
+                <p class="text-[#ef6c35] font-bold text-sm mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#ef6c35] animate-pulse"></span>موسوعة قرار الطعام</p>
+                <h1 class="display-font text-5xl sm:text-7xl lg:text-8xl text-[#f2ead9] tracking-tight leading-[1.05] mb-6">
+                    غذاؤك<br/><span class="text-[#cbdc57]">إشارتك.</span>
+                </h1>
+                <p class="max-w-xl text-base sm:text-lg text-[#d7e3d1]/75 leading-relaxed">
+                    دليل تفاعلي يقرأ اسم الطعام ويعيد لك إشارتك الأولى: طيب، بجرعة، أم خارج الخريطة.
+                </p>
+              </div>
+              <div class="hidden lg:flex w-48 h-48 rounded-full border border-[#cbdc57]/50 items-center justify-center relative rotate-6">
+                <div class="absolute inset-5 rounded-full border border-dashed border-[#ef6c35]/70"></div>
+                <div class="text-center -rotate-6"><span class="block display-font text-5xl text-[#cbdc57]">60</span><span class="font-mono text-[9px] text-[#f2ead9] tracking-widest">SPECIMENS<br/>CATALOGUED</span></div>
+              </div>
+            </div>
+
+            <!-- Search Widget -->
+            <div id="search-section" class="scan-frame max-w-5xl mx-auto mt-14 paper-panel p-4 sm:p-6 text-right">
+                <label class="block text-xs font-bold text-[#102c25] uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i data-lucide="scan-line" class="w-4 h-4 text-[#ef6c35]"></i>
+                    افحص عيّنة من خريطة الطيبات
+                </label>
+                <div class="relative">
+                    <input type="text" id="food-input" autocomplete="off" aria-describedby="search-hint" placeholder="مثال: أرز، دجاج، تمر، طماطم..." class="w-full bg-[#e8dfcd] border-2 border-[#102c25] rounded-none px-5 py-4 text-[#102c25] placeholder-[#102c25]/50 focus:outline-none focus:border-[#ef6c35] transition-colors text-base font-bold pr-12 pl-12">
+                    <i data-lucide="crosshair" class="w-5 h-5 text-[#ef6c35] absolute left-4 top-1/2 -translate-y-1/2"></i>
+                    <button type="button" id="clear-search" aria-label="مسح البحث" class="hidden absolute left-12 top-1/2 -translate-y-1/2 text-[#102c25] hover:text-[#ef6c35]" title="مسح البحث">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <p id="search-hint" class="mt-2 text-[11px] text-[#102c25]/65">اكتب حرفين على الأقل لبدء البحث. الاسم، الفئة، والوصف كلها نقاط دخول.</p>
+
+                <div id="results-container" class="mt-6 space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-1" aria-live="polite"></div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Golden Rules Section -->
+    <section id="rules-section" class="py-20 border-b border-emerald-900/40 relative z-10 bg-emerald-950/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl font-black text-white mb-4">الفلسفة والقواعد الذهبية الستة</h2>
+                <p class="text-emerald-200/60 text-sm">ركائز فسيولوجية لإعادة ضبط القناة الهضمية والمناعة المخاطية.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-800/60 hover:border-emerald-500 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold mb-4">1</div>
+                    <h3 class="text-lg font-bold text-white mb-2">قاعدة الحظر الشامل</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">كل شيء ممنوع تلقائياً حتى يثبت وجوده نصاً في قائمة المسموحات الفسيولوجية.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-800/60 hover:border-emerald-500 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold mb-4">2</div>
+                    <h3 class="text-lg font-bold text-white mb-2">قاعدة الجوع الشديد</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">لا تأكل إلا عند الشعور الفعلي بالجوع الحقيقي، وتجنب الأكل بداعي العادة أو الملل.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-800/60 hover:border-emerald-500 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold mb-4">3</div>
+                    <h3 class="text-lg font-bold text-white mb-2">قاعدة التوقف المبكر</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">التوقف الفوري عن تناول الطعام قبل امتلاء المعدة والشعور بالشبع التام.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-800/60 hover:border-emerald-500 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold mb-4">4</div>
+                    <h3 class="text-lg font-bold text-white mb-2">الصيام الدوري المتقطع</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">صيام الإثنين والخميس والصيام المتقطع لإراحة الكبد والأجهزة الحيوية.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-800/60 hover:border-emerald-500 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold mb-4">5</div>
+                    <h3 class="text-lg font-bold text-white mb-2">عدم خلط الأصناف</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">تقليل دمج أنواع متعددة من الطعام في وجبة واحدة لتسهيل عمل الإنزيمات.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-800/60 hover:border-emerald-500 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold mb-4">6</div>
+                    <h3 class="text-lg font-bold text-white mb-2">الروتين الصباحي الذهبي</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">مضمضة جيدة، كوب ماء دافئ، وتمرة واحدة لتنشيط الهضم بلطف.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4 Weeks Protocol Section -->
+    <section id="protocol-section" class="py-20 border-b border-emerald-900/40 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl font-black text-white mb-4">خطة التدرج للمبتدئين (بروتوكول الـ 4 أسابيع)</h2>
+                <p class="text-emerald-200/60 text-sm">بروتوكول يتجنب إحداث صدمة مفاجئة للجسم أثناء التحول للنظام.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="p-6 rounded-2xl bg-[#030a08] border border-emerald-800/80">
+                    <span class="text-xs font-mono text-amber-400 font-bold uppercase block mb-2">الأسبوع الأول</span>
+                    <h3 class="text-lg font-bold text-white mb-2">الروتين الصباحي</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">الالتزام بمضمضة الصباح + كوب ماء دافئ + تمرة، مع الإبقاء على نظامك العادي.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-[#030a08] border border-emerald-800/80">
+                    <span class="text-xs font-mono text-amber-400 font-bold uppercase block mb-2">الأسبوع الثاني</span>
+                    <h3 class="text-lg font-bold text-white mb-2">إستبدال الخبز</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">قطع الخبز العادي والبلدي والفينو استبداله بتوست القمح الكامل بالردة المحمص.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-[#030a08] border border-emerald-800/80">
+                    <span class="text-xs font-mono text-amber-400 font-bold uppercase block mb-2">الأسبوع الثالث</span>
+                    <h3 class="text-lg font-bold text-white mb-2">قطع الحليب السائل</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">الامتناع عن الحليب والجبن القريش والفيتا، واستبدالها بالأجبان الصفراء المعتقة والقشطة.</p>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-[#030a08] border border-emerald-800/80">
+                    <span class="text-xs font-mono text-amber-400 font-bold uppercase block mb-2">الأسبوع الرابع</span>
+                    <h3 class="text-lg font-bold text-white mb-2">التطبيق الكامل</h3>
+                    <p class="text-xs text-emerald-200/70 leading-relaxed">منع الدجاج والبيض والطماطم والورقيات والبدء بالصيام المتقطع وتطبيق الطيبات كاملاً.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Full Database View -->
+    <section id="db-section" class="py-20 border-b border-emerald-900/40 relative z-10 bg-emerald-950/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-2">سجل الطيبات والخبائث الشامل</h2>
+                    <p class="text-emerald-200/60 text-sm">تصفح كافة عناصر قاعدة البيانات المسجلة بالسيرفر</p>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" data-filter="all" onclick="filterType('all')" class="filter-button px-4 py-2 rounded-xl bg-emerald-900/60 border border-emerald-700 text-xs text-white font-semibold hover:bg-emerald-800">الكل</button>
+                    <button type="button" data-filter="allow" onclick="filterType('allow')" class="filter-button px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-xs text-emerald-300 font-semibold hover:bg-emerald-500/30">المسموحات والأساسيات</button>
+                    <button type="button" data-filter="deny" onclick="filterType('deny')" class="filter-button px-4 py-2 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 font-semibold hover:bg-rose-500/30">الممنوعات والخبائث</button>
+                </div>
+            </div>
+            <p id="grid-status" class="mb-5 text-xs text-emerald-200/60" aria-live="polite"></p>
+
+            <div id="grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+    </section>
+
+    <!-- Footer with moodyx Signature -->
+    <footer class="border-t border-emerald-900/60 bg-[#020705] py-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-slate-950 font-bold">
+                    <i data-lucide="leaf" class="w-4 h-4"></i>
+                </div>
+                <span class="text-lg font-bold text-white">الطيبات | Altayebaat Platform</span>
+            </div>
+
+            <div class="text-center">
+                <p class="text-xs text-emerald-400/80 font-mono tracking-wider">
+                    DEVELOPED & DESIGNED BY <span class="text-amber-400 font-bold uppercase text-sm">moodyx</span>
+                </p>
+                <span class="text-[10px] text-emerald-600 font-mono">Full-Stack Solution &copy; 2026</span>
+            </div>
+
+            <div class="flex items-center gap-4 text-emerald-400/80">
+                <i data-lucide="shield-check" class="w-5 h-5 text-emerald-500"></i>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script Logic -->
+    <script>
+        lucide.createIcons();
+        let allData = [];
+        let searchTimer;
+        let activeFilter = 'all';
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[character]));
+        }
+
+        function showMessage(container, message, tone = 'muted') {
+            const toneClass = tone === 'error' ? 'border-rose-900/60 bg-rose-950/30 text-rose-200' : 'border-slate-800 bg-emerald-950/20 text-slate-400';
+            container.innerHTML = `<div class="p-4 rounded-xl border ${toneClass} text-center text-sm">${escapeHtml(message)}</div>`;
+        }
+
+        async function fetchInitialData() {
+            const grid = document.getElementById('grid-container');
+            grid.innerHTML = '<div class="md:col-span-2 lg:col-span-3 p-8 text-center text-sm text-emerald-200/60">جاري تحميل سجل الأطعمة...</div>';
+            try {
+                const res = await fetch('/api/foods/all');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                allData = json.data;
+                renderGrid(allData, 'all');
+            } catch (err) {
+                console.error('Error loading database:', err);
+                grid.innerHTML = '<div class="md:col-span-2 lg:col-span-3 p-8 rounded-xl border border-rose-900/60 bg-rose-950/30 text-center text-sm text-rose-200">تعذر تحميل سجل الأطعمة. حاول تحديث الصفحة.</div>';
+            }
+        }
+
+        function liveSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(runSearch, 250);
+        }
+
+        async function runSearch() {
+            const query = document.getElementById('food-input').value.trim();
+            const container = document.getElementById('results-container');
+            const clearButton = document.getElementById('clear-search');
+            clearButton.classList.toggle('hidden', !query);
+
+            if (query.length < 2) {
+                container.innerHTML = '';
+                if (query) showMessage(container, 'اكتب حرفين على الأقل للبحث.');
+                return;
+            }
+
+            showMessage(container, 'جاري البحث...');
+            try {
+                const res = await fetch(`/api/foods/search?q=${encodeURIComponent(query)}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                
+                container.innerHTML = '';
+
+                if (json.data.length === 0) {
+                    showMessage(container, `لم نجد نتائج مباشرة لـ "${query}". جرّب اسماً أو فئة مختلفة.`);
+                    return;
+                }
+
+                const count = document.createElement('p');
+                count.className = 'text-xs text-emerald-200/60';
+                count.textContent = `${json.count} نتيجة`;
+                container.appendChild(count);
+                json.data.forEach(item => {
+                    const card = createCardElement(item);
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error(err);
+                showMessage(container, 'تعذر تنفيذ البحث. حاول مرة أخرى.', 'error');
+            }
+        }
+
+        function createCardElement(item) {
+            const div = document.createElement('div');
+            let bgStyle = "bg-emerald-950/60 border-emerald-800/80";
+            let badgeStyle = "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
+
+            if (item.type === 'deny') {
+                bgStyle = "bg-rose-950/40 border-rose-900/60";
+                badgeStyle = "bg-rose-500/20 text-rose-300 border-rose-500/30";
+            } else if (item.type === 'weekly' || item.type === 'monthly') {
+                bgStyle = "bg-amber-950/40 border-amber-900/60";
+                badgeStyle = "bg-amber-500/20 text-amber-300 border-amber-500/30";
+            }
+
+            const typeLabel = item.type === 'deny' ? 'خارج الخريطة' : item.type === 'allow' ? 'متاح' : 'بجرعة';
+            div.className = `specimen-card p-5 rounded-xl border text-right transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_6px_0_rgba(203,220,87,.45)] ${bgStyle}`;
+            div.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1"><span class="specimen-number text-2xl">${String(item.id).padStart(2, '0')}</span><span class="text-[9px] font-mono tracking-widest text-[#cbdc57] uppercase">${typeLabel}</span></div>
+                        <h3 class="text-lg font-bold text-white">${escapeHtml(item.name)}</h3>
+                        <span class="text-[10px] text-emerald-400 font-mono">${escapeHtml(item.category)}</span>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-[11px] font-bold font-mono border ${badgeStyle}">${escapeHtml(item.level)}</span>
+                </div>
+                <p class="text-xs text-emerald-100/80 leading-relaxed mb-3">${escapeHtml(item.description)}</p>${item.swap ? `
+                    <div class="text-xs bg-[#030a08]/80 p-3 rounded-lg border border-rose-900/50 text-amber-300">
+                        <strong>💡 البديل المقترح:</strong> ${escapeHtml(item.swap)}
+                    </div>
+                ` : ''}
+            `;
+            return div;
+        }
+
+        function renderGrid(data, filter = activeFilter) {
+            const grid = document.getElementById('grid-container');
+            grid.innerHTML = '';
+            activeFilter = filter;
+            document.querySelectorAll('.filter-button').forEach(button => {
+                const isActive = button.dataset.filter === filter;
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                button.classList.toggle('ring-2', isActive);
+                button.classList.toggle('ring-amber-400', isActive);
+            });
+            document.getElementById('grid-status').textContent = `${data.length} عنصر`;
+            if (!data.length) {
+                grid.innerHTML = '<div class="md:col-span-2 lg:col-span-3 p-8 text-center text-sm text-emerald-200/60">لا توجد عناصر في هذا التصنيف.</div>';
+                return;
+            }
+            data.forEach(item => {
+                grid.appendChild(createCardElement(item));
+            });
+        }
+
+        function filterType(type) {
+            if (type === 'all') {
+                renderGrid(allData, type);
+            } else if (type === 'allow') {
+                renderGrid(allData.filter(x => x.type !== 'deny'), type);
+            } else {
+                renderGrid(allData.filter(x => x.type === 'deny'), type);
+            }
+        }
+
+        document.getElementById('clear-search').addEventListener('click', () => {
+            document.getElementById('food-input').value = '';
+            document.getElementById('clear-search').classList.add('hidden');
+            document.getElementById('results-container').innerHTML = '';
+            document.getElementById('food-input').focus();
+        });
+        document.getElementById('food-input').addEventListener('input', liveSearch);
+
+        window.onload = fetchInitialData;
+    </script>
+</body>
+</html>
