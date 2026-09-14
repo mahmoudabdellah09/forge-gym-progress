@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0d12" />
+  <title>Forge — Gym Progress</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles-overrides.css" />
+</head>
+<body>
+  <section id="auth-screen" class="auth-screen">
+    <div class="auth-brand"><span class="brand-mark">F</span><strong>FORGE</strong></div>
+    <div class="auth-copy"><p class="eyebrow">YOUR TRAINING JOURNEY</p><h1>Make progress<br><em>impossible to miss.</em></h1><p>Track the work, learn your body, and build momentum that lasts.</p></div>
+    <form id="profile-form" class="auth-card">
+      <h2>Set up your profile</h2><p class="muted">Everything starts at zero. Your numbers will grow with you.</p>
+      <label>Your name<input name="name" required placeholder="e.g. Alex" autocomplete="name"></label>
+      <label>Email address<input name="email" required type="email" placeholder="you@example.com" autocomplete="email"></label>
+      <label>Password<input name="password" required type="password" minlength="4" placeholder="At least 4 characters" autocomplete="new-password"></label>
+      <div class="form-row"><label>Height (cm)<input name="height" required type="number" min="100" max="240" placeholder="175"></label><label>Starting weight (kg)<input name="weight" required type="number" min="25" max="300" step=".1" placeholder="80"></label></div>
+      <label>Primary goal<select name="goal"><option>Build strength</option><option>Lose body fat</option><option>Build muscle</option><option>Improve fitness</option></select></label>
+      <button class="primary-button wide" type="submit">Create my account <b>→</b></button>
+      <small class="privacy-note">Your data stays on this device in this prototype.</small>
+      <button type="button" class="auth-switch" data-auth-toggle>Already have an account? Sign in</button>
+    </form>
+  </section>
+
+  <main id="app" class="app-shell hidden">
+    <header class="topbar"><div class="brand"><span class="brand-mark">F</span><span>FORGE</span></div><button class="icon-button" data-open-profile aria-label="Open profile"><span class="avatar" data-avatar>?</span></button></header>
+    <section class="hero"><div><p class="eyebrow" data-date></p><h1>Keep showing up,<br><em data-name>there.</em></h1><p class="hero-copy">Small sessions. Stronger you.</p></div><div class="streak-ring" aria-label="Current day streak"><strong data-streak>0</strong><span>DAY<br>STREAK</span></div></section>
+    <nav class="tabs" aria-label="App sections"><button class="tab active" data-view="overview">Overview</button><button class="tab" data-view="workouts">Workouts</button><button class="tab" data-view="progress">Progress</button></nav>
+
+    <section id="overview" class="view active">
+      <div class="section-heading"><div><p class="eyebrow">THIS WEEK</p><h2>Your momentum</h2></div><span class="muted" data-week-count>0 / 5 sessions</span></div>
+      <div class="week-card"><div class="week-days"><div class="day" data-day="0"><span>M</span><i></i></div><div class="day" data-day="1"><span>T</span><i></i></div><div class="day" data-day="2"><span>W</span><i></i></div><div class="day" data-day="3"><span>T</span><i></i></div><div class="day" data-day="4"><span>F</span><i></i></div><div class="day rest"><span>S</span><i>—</i></div><div class="day rest"><span>S</span><i>—</i></div></div><div class="progress-line"><span data-week-progress></span></div><p class="microcopy" data-week-message>Complete a workout to start your week.</p></div>
+      <div class="section-heading"><div><p class="eyebrow">TODAY'S PLAN</p><h2>Upper body strength</h2></div><span class="tag">45 MIN</span></div>
+      <article class="workout-feature"><div class="workout-art art-upper"><span>UPPER<br><b>01</b></span></div><div class="workout-info"><span class="tag accent" data-plan-status>READY</span><h3>Build your base</h3><p>Chest, back & shoulders</p><div class="workout-meta"><span>8 exercises</span><span>•</span><span>320 kcal</span></div><button class="primary-button" data-start>Start workout <b>→</b></button></div></article>
+      <div class="section-heading compact"><div><p class="eyebrow">QUICK STATS</p><h2>Since you started</h2></div><button class="text-button" data-view-link="progress">See all →</button></div>
+      <div class="stat-grid"><div class="stat-card"><span>BODY WEIGHT</span><strong><span data-weight>0.0</span> <small>kg</small></strong><em data-weight-change>Starting point</em></div><div class="stat-card"><span>WORKOUTS</span><strong data-workouts>0</strong><em>Completed sessions</em></div><div class="stat-card"><span>BEST LIFT</span><strong><span data-best-lift>0.0</span> <small>kg</small></strong><em>Log a lift to track it</em></div><div class="stat-card"><span>CONSISTENCY</span><strong><span data-consistency>0</span><small>%</small></strong><em>Based on your sessions</em></div></div>
+    </section>
+
+    <section id="workouts" class="view"><div class="section-heading"><div><p class="eyebrow">LIBRARY</p><h2>Train your way</h2></div><button class="round-add" data-open-workout aria-label="Add workout">+</button></div><div class="filter-row"><button class="filter active">All</button><button class="filter">Push</button><button class="filter">Pull</button><button class="filter">Legs</button></div><div id="workout-list" class="workout-list"></div></section>
+
+    <section id="progress" class="view"><div class="section-heading"><div><p class="eyebrow">YOUR JOURNEY</p><h2>Progress, visible.</h2></div><button class="text-button" data-open-log>+ Log weight</button></div><div class="chart-card"><div class="chart-head"><div><span>BODY WEIGHT</span><strong><span data-chart-weight>0.0</span> <small>kg</small></strong></div><em data-chart-change>Start your first log<small>today</small></em></div><svg viewBox="0 0 340 130" role="img" aria-label="Body weight chart"><defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#d5f35f" stop-opacity=".28"/><stop offset="1" stop-color="#d5f35f" stop-opacity="0"/></linearGradient></defs><path class="area" data-chart-area d="M0 110 L340 110 V130 H0Z"/><path class="line" data-chart-line d="M0 110 L340 110"/></svg><div class="chart-labels"><span>Start</span><span data-chart-middle>—</span><span>Today</span></div></div><div class="section-heading compact"><div><p class="eyebrow">PHOTO TIMELINE</p><h2>See the change</h2></div><button class="text-button" data-add-photo>Add photo</button></div><div class="photo-grid" id="photo-grid"></div></section>
+  </main>
+
+  <div class="bottom-nav hidden" id="bottom-nav"><button class="bottom-item active" data-view="overview"><span>⌂</span>Home</button><button class="bottom-item" data-view="workouts"><span>▦</span>Train</button><button class="bottom-item" data-view="progress"><span>◒</span>Progress</button></div>
+  <div class="toast" id="toast" role="status"></div>
+  <input id="photo-input" type="file" accept="image/*" class="visually-hidden">
+  <dialog id="workout-modal"><form method="dialog" id="add-form"><button class="close-modal" value="cancel">×</button><p class="eyebrow">NEW ENTRY</p><h2>Add a workout</h2><label>Workout name<input name="name" required placeholder="e.g. Push day"></label><label>Focus<select name="focus"><option>Push</option><option>Pull</option><option>Legs</option><option>Full body</option></select></label><label>Duration<input name="duration" type="number" min="5" value="45"></label><button class="primary-button" value="default">Add to library <b>→</b></button></form></dialog>
+  <dialog id="log-modal"><form method="dialog" id="log-form"><button class="close-modal" value="cancel">×</button><p class="eyebrow">PROGRESS LOG</p><h2>Log your weight</h2><p class="muted">Add a check-in and your chart will update.</p><label>Current weight (kg)<input name="weight" required type="number" min="25" max="300" step=".1" placeholder="80.5"></label><button class="primary-button" value="default">Save check-in <b>→</b></button></form></dialog>
+  <dialog id="profile-modal"><form method="dialog" id="profile-form-edit"><button class="close-modal" value="cancel">×</button><p class="eyebrow">YOUR PROFILE</p><h2 data-profile-title>Profile</h2><label>Name<input name="name" required></label><label>Height (cm)<input name="height" required type="number"></label><label>Goal<select name="goal"><option>Build strength</option><option>Lose body fat</option><option>Build muscle</option><option>Improve fitness</option></select></label><button class="primary-button" value="default">Save changes <b>✓</b></button><button type="button" class="danger-button" data-sign-out>Sign out</button></form></dialog>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "forge-gym-progress-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Forge gym progress tracker web app and Capacitor Android shell",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap open android",
+    "android:add": "npx cap add android",
+    "build": "node -e \"console.log('Static frontend: no build step required')\""
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "express": "^4.21.1"
+  }
+}

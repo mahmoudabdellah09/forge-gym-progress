@@ -1,0 +1,13 @@
+{
+  "appId": "com.forge.gymprogress",
+  "appName": "Forge",
+  "webDir": ".",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}
