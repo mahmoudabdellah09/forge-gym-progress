@@ -4,7 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const DATA_FILE = process.env.FORGE_DATA_FILE || path.join(__dirname, 'data.json');
 const authTokens = new Map();
 const emptyDb = { users: [], workouts: [], sessions: [], weights: [], photos: [], lifts: [] };
@@ -20,7 +20,11 @@ function readDb() {
   catch (_) { return { ...emptyDb }; }
 }
 function writeDb(db) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+  } catch (err) {
+    console.warn('Could not write to data file:', err.message);
+  }
 }
 function publicUser(user) {
   if (!user) return null;
@@ -137,4 +141,4 @@ app.post('/api/photos', requireUser, (req, res) => {
 });
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.listen(PORT, () => console.log(`Forge server listening on http://localhost:${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Forge server listening on http://0.0.0.0:${PORT}`));
