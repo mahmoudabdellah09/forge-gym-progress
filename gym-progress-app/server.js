@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const { Pool } = require('pg');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const DATA_FILE = process.env.FORGE_DATA_FILE || path.join(__dirname, 'data.json');
 const authTokens = new Map();
 const emptyDb = { users: [], workouts: [], sessions: [], weights: [], photos: [], lifts: [] };
@@ -171,5 +171,4 @@ app.post('/api/photos', requireUser, async (req, res) => {
 });
 app.use((error, req, res, next) => { console.error(error); res.status(500).json({ error: 'Server error' }); });
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-
-store.init().then(() => app.listen(PORT, () => console.log(`Forge server listening on port ${PORT} using ${process.env.DATABASE_URL ? 'PostgreSQL' : 'file storage'}`))).catch(error => { console.error('Database initialization failed', error); process.exit(1); });
+store.init().then(() => app.listen(PORT, '0.0.0.0', () => console.log(`Forge server listening on port ${PORT} using ${process.env.DATABASE_URL ? 'PostgreSQL' : 'file storage'}`))).catch(error => { console.error('Database initialization failed', error); process.exit(1); });

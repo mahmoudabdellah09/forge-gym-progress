@@ -1,0 +1,8 @@
+{
+  "name": "Forge — Gym Progress",
+  "description": "Track gym workouts, log exercises and weights, monitor consistency streaks, and record progress photos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,116 +1,144 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
+const DATA_FILE = process.env.FORGE_DATA_FILE || path.join(__dirname, 'data.json');
+const authTokens = new Map();
+const emptyDb = { users: [], workouts: [], sessions: [], weights: [], photos: [], lifts: [] };
+const starterWorkouts = [
+  ['Upper body strength', 'Push', '8 exercises · 45 min', '↑'],
+  ['Pull & posture', 'Pull', '7 exercises · 40 min', '↗'],
+  ['Lower body power', 'Legs', '9 exercises · 50 min', '↓'],
+  ['Full body foundation', 'Full body', '10 exercises · 55 min', '✦']
+];
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Initialize In-Memory / File SQLite Database
-const db = new sqlite3.Database(':memory:', (err) => {
-    if (err) {
-        console.error('Failed to open database:', err.message);
-    } else {
-        console.log('Connected to SQLite database.');
-        seedDatabase();
-    }
-});
-
-function seedDatabase() {
-    db.serialize(() => {
-        db.run(`
-            CREATE TABLE IF NOT EXISTS foods (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE,
-                category TEXT NOT NULL,
-                type TEXT NOT NULL,
-                level TEXT NOT NULL,
-                description TEXT NOT NULL,
-                swap TEXT
-            )
-        `);
-
-        const stmt = db.prepare(`
-            INSERT OR IGNORE INTO foods (name, category, type, level, description, swap) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        `);
-
-        const dataset = [
-            // المسموحات الخمسة والأساسيات
-            ['أرز', 'نشويات', 'allow', 'أساسيات (بلا قيود)', 'مصدر الطاقة الرئيسي والنظيف للجسم، مسموح بكل أشكاله المطبوخة.', null],
-            ['بطاطس', 'نشويات', 'allow', 'أساسيات (بلا قيود)', 'مسلوقة أو محمّرة بزيت زيتون أو سمن بلدي. مصدر بوتاسيوم ممتاز.', null],
-            ['بطاطا حلوة', 'نشويات', 'allow', 'أساسيات (بلا قيود)', 'غنية بالمغذيات وسهلة الهضم ومفيدة لجدار المعدة.', null],
-            ['تمر', 'سكريات طبيعية', 'allow', 'أساسيات (بلا قيود)', 'من 3 إلى 7 حبات يومياً، غني بالمعادن وينشط الهضم.', null],
-            ['عسل نحل', 'سكريات طبيعية', 'allow', 'أساسيات (بلا قيود)', 'مطهر ومغذي، يفضل تناوله صباحاً مع الماء الدافئ.', null],
-            ['سكر أبيض', 'سكريات', 'allow', 'أساسيات (بشرط)', 'مسموح باعتدال شديد لتوفير الجلوكوز النقي بدون الإكراط.', null],
-            ['زيت زيتون', 'دهون', 'allow', 'أساسيات (بلا قيود)', 'دهون طبيعية معصورة على البارد، ممتازة للطبخ وعلى الطعام.', null],
-            ['سمن بلدي', 'دهون', 'allow', 'أساسيات (بلا قيود)', 'السمن الطبيعي الحيواني نقي ومغذي للجهاز العصبي.', null],
-            ['زبدة بلدي', 'دهون', 'allow', 'أساسيات (بلا قيود)', 'زبدة طبيعية حرة خالية من الإضافات والزيوت المهدروجة.', null],
-            ['زيت سمسم', 'دهون', 'allow', 'أساسيات (بلا قيود)', 'مفيد جداً ومقاوم للأكسدة.', null],
-
-            // المكررات (يومياً / أسبوعياً / شهرياً)
-            ['لحم بقري', 'بروتينات', 'weekly', 'أسبوعياً (1-2 مرة)', 'اللحوم الحمراء الحلال تؤكل بتكرار معتدل لتوفير البروتين والحديد.', null],
-            ['لحم جموسي', 'بروتينات', 'weekly', 'أسبوعياً (1-2 مرة)', 'مصدر ممتاز للبروتين وسهل الهضم عند الطبخ الجيد.', null],
-            ['لحم ضأن', 'بروتينات', 'weekly', 'أسبوعياً (مرة بالأسسبوع)', 'لحوم خروف غنية بالدهون المفيدة، تؤكل باعتدال.', null],
-            ['سمك بحري', 'بروتينات', 'weekly', 'أسبوعياً (مرة بالأسسبوع)', 'الأسماك البحرية الدهنية مثل السردين والماكريل المشوي.', null],
-            ['حمام', 'طيور حلال', 'weekly', 'أسبوعياً (1-2 مرة)', 'من أفضل أنواع الطيور المسموحة في نظام الطيبات.', null],
-            ['سمان', 'طيور حلال', 'weekly', 'أسبوعياً (1-2 مرة)', 'بروتين خفيف وسهل الهضم ولا يسبب التهابات.', null],
-            ['أرانب', 'لحوم بيضاء', 'weekly', 'أسبوعياً (1-2 مرة)', 'لحم نقي جداً ومناسب للقولون والمعدة.', null],
-            ['قلقاس', 'خضروات مطبوخة', 'daily', 'يومياً (مرة واحدة)', 'مطبوخ جيداً مع المرقة والمادة الدهنية.', null],
-            ['كوسة مطبوخة', 'خضروات مطبوخة', 'daily', 'يومياً (مرة واحدة)', 'خفيفة جداً على جدار المعدة والقولون العصبي.', null],
-            ['باميا مطبوخة', 'خضروات مطبوخة', 'daily', 'يومياً (مرة واحدة)', 'مفيدة لبطانة الأمعاء بفضل المادة الهلامية الطبيعية.', null],
-            ['توست الردة', 'مخبوزات', 'daily', 'يومياً (مرة واحدة)', 'بديل الخبز المسموح، يفضل تحميصه جيداً قبل الأكل.', null],
-            ['توست بني', 'مخبوزات', 'daily', 'يومياً (مرة واحدة)', 'مصنوع من القمح الكامل ومحمص.', null],
-            ['موز', 'فواكه', 'monthly', 'أحياناً (شهرياً)', 'فاكهة مغذية ولكن تؤكل باعتدال وبشكل غير يومي.', null],
-            ['جوافة بدون بذر', 'فواكه', 'monthly', 'أحياناً (شهرياً)', 'من الفواكه القليلة المسموحة بشرط نزع البذور بالكامل.', null],
-            ['شوكولاتة داكنة', 'حلويات', 'monthly', 'أحياناً (شهرياً)', 'نسبة كاكاو عالية بدون حليب.', null],
-
-            // الممنوعات الشديدة والبدائل
-            ['دجاج', 'بروتينات', 'deny', 'ممنوع مطلقاً', 'يسبب التهابات جهازيّة ومشاكل في القولون والمعدة بفضل طريقة التغذية والتهجين.', 'لحوم الأرانب، الحمام، السمان، أو اللحم البقري والجموسي.'],
-            ['بيض', 'بروتينات', 'deny', 'ممنوع مطلقاً', 'مسبب رئيسي للالتهابات الجهازيّة وحساسية القناة الهضمية والارتجاع.', 'القشطة الطبيعية مع العسل والتمر، أو الجبن المطبوخ الطبيعي.'],
-            ['حليب', 'ألبان', 'deny', 'ممنوع مطلقاً', 'الحليب البقري ومشتقاته السائلة تسبب اضطراب المناعة المخاطية والتهاب الأمعاء.', 'القشطة الطبيعية أو الزبدة البلدي النقية.'],
-            ['جبن قريش', 'ألبان', 'deny', 'ممنوع مطلقاً', 'بروتين الكازين المركّز يسبب تهيج القولون والمفاصل.', 'الجبن المطبوخ ذو الجودة العالية أو القشطة.'],
-            ['دقيق أبيض', 'مخبوزات', 'deny', 'ممنوع مطلقاً', 'الخبز الأبيض والفينو والمعجنات ترفع الالتهاب فوراً وتسبب خمول الأمعاء.', 'توست الردة أو التوست البني المحمص.'],
-            ['سلطة خضراء', 'خضروات نيئة', 'deny', 'ممنوع مطلقاً', 'الأوراق الخضراء النيئة ترهق القولون وتصعب هضمها وتعيق امتصاص المعادن.', 'الخضروات المطبوخة جيداً كالمرقة والقلقاس والكوسة.'],
-            ['طماطم نيئة', 'خضروات نيئة', 'deny', 'ممنوع مطلقاً', 'تحتوي على الليكتينات والأحماض المتهيجة للمعدة.', 'تسبيك الطماطم المطبوخة منزلياً بنزع القشر والبذر.'],
-            ['خيّار', 'خضروات نيئة', 'deny', 'ممنوع مطلقاً', 'عالي الألياف النيئة التي تسبب غازات وانتفاخ القولون.', 'المخلل البيتي الفاخر الخالي من الخل المركّز.'],
-            ['شاي أسود', 'مشروبات', 'deny', 'ممنوع مطلقاً', 'يحتوي على تانينات تعيق امتصاص الحديد وتجهد بطانة المعدة.', 'الماء الدافئ الصباحي مع العسل، أو الشاي الأخضر الخفيف جداً.'],
-            ['قهوة', 'مشروبات', 'deny', 'ممنوع مطلقاً', 'تسبب تهيج صمامات المعدة والارتجاع المريئي وتحفز الكورتيزول.', 'مغلي النعناع أو الينسون أو الماء الدافئ.'],
-            ['زيوت نباتية مهدروجة', 'دهون', 'deny', 'ممنوع مطلقاً', 'زيوت الذرة والصويا والعباد تسبب أكسدة جدران الخلايا والتهاب العروق.', 'زيت الزيتون، السمن البلدي، أو زبدة الكاكاو.']
-        ];
-
-        dataset.forEach(item => stmt.run(item));
-        stmt.finalize();
-        console.log('Database seeded with Altayebaat items.');
-    });
+function readDb() {
+  try { return { ...emptyDb, ...JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) }; }
+  catch (_) { return { ...emptyDb }; }
+}
+function writeDb(db) {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+  } catch (err) {
+    console.warn('Could not write to data file:', err.message);
+  }
+}
+function publicUser(user) {
+  if (!user) return null;
+  const { password, passwordHash, ...safe } = user;
+  return safe;
+}
+function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
+  const passwordHash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${passwordHash}`;
+}
+function verifyPassword(password, storedHash) {
+  if (!storedHash) return false;
+  const [salt, expected] = storedHash.split(':');
+  if (!salt || !expected) return false;
+  const actual = crypto.scryptSync(password, salt, 64).toString('hex');
+  return crypto.timingSafeEqual(Buffer.from(actual, 'hex'), Buffer.from(expected, 'hex'));
+}
+function issueToken(userId) {
+  const token = crypto.randomBytes(32).toString('hex');
+  authTokens.set(token, userId);
+  return token;
+}
+function userState(db, userId) {
+  return {
+    user: publicUser(db.users.find(item => item.id === userId)),
+    workouts: db.workouts.filter(item => item.userId === userId),
+    sessions: db.sessions.filter(item => item.userId === userId).map(item => item.name),
+    weights: db.weights.filter(item => item.userId === userId),
+    photos: db.photos.filter(item => item.userId === userId),
+    lifts: db.lifts.filter(item => item.userId === userId)
+  };
+}
+function requireUser(req, res, next) {
+  const bearer = req.get('authorization') || '';
+  const userId = authTokens.get(bearer.startsWith('Bearer ') ? bearer.slice(7) : '');
+  const db = readDb();
+  if (!userId || !db.users.some(user => user.id === userId)) return res.status(401).json({ error: 'Sign in required' });
+  req.userId = userId; req.db = db; next();
 }
 
-// REST API Endpoints
-app.get('/api/foods/search', (req, res) => {
-    const q = req.query.q ? `%${req.query.q.trim()}%` : '%';
-    const query = `SELECT * FROM foods WHERE name LIKE ? ORDER BY CASE WHEN type = 'allow' THEN 1 WHEN type = 'daily' THEN 2 WHEN type = 'weekly' THEN 3 WHEN type = 'monthly' THEN 4 ELSE 5 END`;
-    
-    db.all(query, [q], (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({ count: rows.length, data: rows });
-    });
+app.use(express.json({ limit: '12mb' }));
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+app.use(express.static(__dirname));
+
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, service: 'forge-api', time: new Date().toISOString() });
 });
 
-app.get('/api/foods/all', (req, res) => {
-    db.all(`SELECT * FROM foods ORDER BY id ASC`, [], (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({ data: rows });
-    });
+app.post('/api/auth/signup', (req, res) => {
+  const { name, email, password, height, goal, weight } = req.body;
+  if (!name || !email || !password) return res.status(400).json({ error: 'Name, email and password are required' });
+  const db = readDb();
+  if (db.users.some(user => user.email.toLowerCase() === email.toLowerCase())) return res.status(409).json({ error: 'An account with that email already exists' });
+  const id = crypto.randomUUID();
+  db.users.push({ id, name, email, passwordHash: hashPassword(password), height: Number(height), goal });
+  starterWorkouts.forEach(([workoutName, focus, detail, icon]) => db.workouts.push({ id: crypto.randomUUID(), userId: id, name: workoutName, focus, detail, icon }));
+  db.weights.push({ id: crypto.randomUUID(), userId: id, value: Number(weight), date: new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase() });
+  writeDb(db);
+  res.status(201).json({ ...userState(db, id), token: issueToken(id) });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.post('/api/auth/login', (req, res) => {
+  const db = readDb();
+  const user = db.users.find(item => item.email.toLowerCase() === String(req.body.email || '').toLowerCase());
+  if (!user || (!verifyPassword(req.body.password, user.passwordHash) && user.password !== req.body.password)) return res.status(401).json({ error: 'Email or password does not match' });
+  if (user.password && !user.passwordHash) {
+    user.passwordHash = hashPassword(req.body.password);
+    delete user.password;
+    writeDb(db);
+  }
+  res.json({ ...userState(db, user.id), token: issueToken(user.id) });
 });
+
+app.get('/api/state', requireUser, (req, res) => res.json(userState(req.db, req.userId)));
+app.put('/api/profile', requireUser, (req, res) => {
+  const user = req.db.users.find(item => item.id === req.userId);
+  Object.assign(user, { name: req.body.name, height: Number(req.body.height), goal: req.body.goal });
+  writeDb(req.db); res.json(userState(req.db, req.userId));
+});
+app.post('/api/workouts', requireUser, (req, res) => {
+  req.db.workouts.push({ id: crypto.randomUUID(), userId: req.userId, name: req.body.name, focus: req.body.focus, detail: req.body.detail, icon: req.body.icon || '+', exercises: req.body.exercises || [] });
+  writeDb(req.db); res.json(userState(req.db, req.userId));
+});
+app.put('/api/workouts/:id', requireUser, (req, res) => {
+  const workout = req.db.workouts.find(item => item.id === req.params.id && item.userId === req.userId);
+  if (!workout) return res.status(404).json({ error: 'Workout not found' });
+  Object.assign(workout, { name: req.body.name, focus: req.body.focus, detail: req.body.detail, exercises: req.body.exercises || [] });
+  writeDb(req.db); res.json(userState(req.db, req.userId));
+});
+app.post('/api/sessions', requireUser, (req, res) => {
+  if (!req.db.sessions.some(item => item.userId === req.userId && item.name === req.body.name)) req.db.sessions.push({ id: crypto.randomUUID(), userId: req.userId, name: req.body.name, date: new Date().toISOString() });
+  writeDb(req.db); res.json(userState(req.db, req.userId));
+});
+app.post('/api/weights', requireUser, (req, res) => {
+  req.db.weights.push({ id: crypto.randomUUID(), userId: req.userId, value: Number(req.body.value), date: req.body.date || new Date().toISOString() });
+  writeDb(req.db); res.json(userState(req.db, req.userId));
+});
+app.post('/api/lifts', requireUser, (req, res) => {
+  const value = Number(req.body.value);
+  if (!Number.isFinite(value) || value <= 0) return res.status(400).json({ error: 'A valid lift weight is required' });
+  req.db.lifts.push({ id: crypto.randomUUID(), userId: req.userId, weight: value, date: req.body.date || new Date().toISOString() });
+  writeDb(req.db); res.json(userState(req.db, req.userId));
+});
+app.post('/api/photos', requireUser, (req, res) => {
+  if (!req.body.url) return res.status(400).json({ error: 'Photo data is required' });
+  req.db.photos.push({ id: crypto.randomUUID(), userId: req.userId, url: req.body.url, date: req.body.date || new Date().toISOString() });
+  writeDb(req.db); res.json(userState(req.db, req.userId));
+});
+
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.listen(PORT, '0.0.0.0', () => console.log(`Forge server listening on http://0.0.0.0:${PORT}`));
