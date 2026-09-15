@@ -2,14 +2,24 @@
   "version": 2,
   "installCommand": "cd gym-progress-app && npm ci",
   "buildCommand": "cd gym-progress-app && npm run build",
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/index.js"
+      "src": "api/index.js",
+      "use": "@vercel/node"
     },
     {
-      "source": "/:path*",
-      "destination": "/gym-progress-app/:path*"
+      "src": "gym-progress-app/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/gym-progress-app/$1"
     }
   ]
 }
