@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "installCommand": "cd gym-progress-app && npm ci",
+  "buildCommand": "cd gym-progress-app && npm run build",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/gym-progress-app/:path*"
+    }
+  ]
+}

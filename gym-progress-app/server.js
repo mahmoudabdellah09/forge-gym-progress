@@ -131,6 +131,8 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
+const storeReady = store.init();
+app.use((req, res, next) => storeReady.then(() => next()).catch(next));
 app.use(express.static(__dirname));
 app.get('/api/health', (req, res) => res.json({ ok: true, service: 'forge-api', database: process.env.DATABASE_URL ? 'postgres' : 'file', time: new Date().toISOString() }));
 
@@ -171,4 +173,12 @@ app.post('/api/photos', requireUser, async (req, res) => {
 });
 app.use((error, req, res, next) => { console.error(error); res.status(500).json({ error: 'Server error' }); });
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-store.init().then(() => app.listen(PORT, '0.0.0.0', () => console.log(`Forge server listening on port ${PORT} using ${process.env.DATABASE_URL ? 'PostgreSQL' : 'file storage'}`))).catch(error => { console.error('Database initialization failed', error); process.exit(1); });
+
+if (require.main === module) {
+  storeReady.then(() => app.listen(PORT, '0.0.0.0', () => console.log(`Forge server listening on port ${PORT} using ${process.env.DATABASE_URL ? 'PostgreSQL' : 'file storage'}`))).catch(error => {
+    console.error('Database initialization failed', error);
+    process.exit(1);
+  });
+}
+
+module.exports = app;
