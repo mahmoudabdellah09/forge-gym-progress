@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const { Pool } = require('pg');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const DATA_FILE = process.env.FORGE_DATA_FILE || path.join(__dirname, 'data.json');
 const authTokens = new Map();
 const emptyDb = { users: [], workouts: [], sessions: [], weights: [], photos: [], lifts: [] };
@@ -115,7 +115,8 @@ class PostgresStore {
   }
 }
 
-const store = process.env.DATABASE_URL ? new PostgresStore() : new FileStore();
+const usePostgres = process.env.FORGE_STORAGE === 'postgres' && Boolean(process.env.DATABASE_URL);
+const store = usePostgres ? new PostgresStore() : new FileStore();
 async function requireUser(req, res, next) {
   const bearer = req.get('authorization') || '';
   const userId = authTokens.get(bearer.startsWith('Bearer ') ? bearer.slice(7) : '');
@@ -134,7 +135,7 @@ app.use((req, res, next) => {
 const storeReady = store.init();
 app.use((req, res, next) => storeReady.then(() => next()).catch(next));
 app.use(express.static(__dirname));
-app.get('/api/health', (req, res) => res.json({ ok: true, service: 'forge-api', database: process.env.DATABASE_URL ? 'postgres' : 'file', time: new Date().toISOString() }));
+app.get('/api/health', (req, res) => res.json({ ok: true, service: 'forge-api', database: usePostgres ? 'postgres' : 'file', time: new Date().toISOString() }));
 
 app.post('/api/auth/signup', async (req, res, next) => {
   try {
@@ -175,7 +176,7 @@ app.use((error, req, res, next) => { console.error(error); res.status(500).json(
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 if (require.main === module) {
-  storeReady.then(() => app.listen(PORT, '0.0.0.0', () => console.log(`Forge server listening on port ${PORT} using ${process.env.DATABASE_URL ? 'PostgreSQL' : 'file storage'}`))).catch(error => {
+  storeReady.then(() => app.listen(PORT, '0.0.0.0', () => console.log(`Forge server listening on port ${PORT} using ${usePostgres ? 'PostgreSQL' : 'file storage'}`))).catch(error => {
     console.error('Database initialization failed', error);
     process.exit(1);
   });
