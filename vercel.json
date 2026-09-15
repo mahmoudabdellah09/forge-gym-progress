@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm ci --prefix gym-progress-app",
+  "installCommand": "npm install --prefix gym-progress-app",
   "buildCommand": "npm run build --prefix gym-progress-app",
   "builds": [
     {
